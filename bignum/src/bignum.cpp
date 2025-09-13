@@ -1,11 +1,18 @@
 #include "bignum/bignum.hpp"
-#include <stdexcept>
+#include <memory>
+#include <string>
+#include <utility>
+#include <complex>
 #include <algorithm>
+#include <iterator>
+#include <stdexcept>
+#include <cstring>
 #include <iomanip>
 #include <sstream>
 #include <cstdint>
 #include <immintrin.h>
 #include <vector>
+
 
 namespace bignum {
 
@@ -14,7 +21,7 @@ uint8_t hex_char_to_val(char c) {
     if (c >= 'a' && c <= 'f') return c - 'a' + 10;
     if (c >= 'A' && c <= 'F') return c - 'A' + 10;
     throw std::invalid_argument("Invalid hex character");
-}
+} // namespace bignum
 
 uint8_t dec_char_to_val(char c) {
     if (c >= '0' && c <= '9') return c - '0';
@@ -270,7 +277,61 @@ BigInt BigInt::operator-(const BigInt& other) const { return *this + (-other); }
 BigInt& BigInt::operator-=(const BigInt& other) { *this = *this - other; return *this; }
 
 namespace {
-// Karatsuba threshold: ниже — schoolbook, выше — karatsuba
+#include <cmath>
+#include <complex>
+
+constexpr size_t FFT_THRESHOLD = 2048; // по limb-ам (64 бита)
+
+// fft
+void fft(std::complex<double>* a, size_t n, bool invert) {
+    for (size_t i = 1, j = 0; i < n; ++i) {
+        size_t bit = n >> 1;
+        for (; j & bit; bit >>= 1) j ^= bit;
+        j ^= bit;
+        if (i < j) std::swap(a[i], a[j]);
+    }
+    for (size_t len = 2; len <= n; len <<= 1) {
+        double ang = 2 * M_PI / len * (invert ? -1 : 1);
+        std::complex<double> wlen(cos(ang), sin(ang));
+        for (size_t i = 0; i < n; i += len) {
+            std::complex<double> w(1);
+            for (size_t j = 0; j < len / 2; ++j) {
+                std::complex<double> u = a[i + j];
+                std::complex<double> v = a[i + j + len / 2] * w;
+                a[i + j] = u + v;
+                a[i + j + len / 2] = u - v;
+                w *= wlen;
+            }
+        }
+    }
+    if (invert) for (size_t i = 0; i < n; ++i) a[i] /= n;
+}
+
+// Умножение через FFT
+void fft_mul(const uint64_t* a, size_t an, const uint64_t* b, size_t bn, uint64_t* out) {
+    size_t n = 1;
+    while (n < an + bn) n <<= 1;
+    std::unique_ptr<std::complex<double>[]> fa(new std::complex<double>[n]{});
+    std::unique_ptr<std::complex<double>[]> fb(new std::complex<double>[n]{});
+    for (size_t i = 0; i < an; ++i) fa[i] = (double)a[i];
+    for (size_t i = 0; i < bn; ++i) fb[i] = (double)b[i];
+    fft(fa.get(), n, false);
+    fft(fb.get(), n, false);
+    for (size_t i = 0; i < n; ++i) fa[i] *= fb[i];
+    fft(fa.get(), n, true);
+    // Собираем результат с переносами 
+    std::unique_ptr<uint64_t[]> res(new uint64_t[n]{});
+    double LIMB_BASE = 18446744073709551616.0; // 2^64
+    int64_t carry = 0;
+    for (size_t i = 0; i < n; ++i) {
+        double val = std::round(fa[i].real()) + carry;
+        carry = (int64_t)(val / LIMB_BASE);
+        res[i] = (uint64_t)(val - carry * LIMB_BASE);
+    }
+    for (size_t i = 0; i < n; ++i) out[i] = res[i];
+}
+}
+
 constexpr size_t KARATSUBA_THRESHOLD = 32; // по limb-ам (64 бита)
 
 void schoolbook_mul(const uint64_t* a, size_t an, const uint64_t* b, size_t bn, uint64_t* out) {
@@ -310,7 +371,6 @@ void schoolbook_mul(const uint64_t* a, size_t an, const uint64_t* b, size_t bn, 
 }
 
 void karatsuba_mul(const uint64_t* a, size_t an, const uint64_t* b, size_t bn, uint64_t* out, uint64_t* buf) {
-    // Для простоты: an == bn, степень двойки, out размер 2*an, buf размер >= 4*an
     if (an <= KARATSUBA_THRESHOLD) {
         schoolbook_mul(a, an, b, bn, out);
         return;
@@ -350,12 +410,22 @@ void karatsuba_mul(const uint64_t* a, size_t an, const uint64_t* b, size_t bn, u
     for (size_t i = 0; i < 2 * k; ++i) out[i + k] += z1[i];
     for (size_t i = 0; i < 2 * k; ++i) out[i + 2 * k] += z2[i];
 }
-} // namespace
 
 BigInt BigInt::operator*(const BigInt& other) const {
     if (is_zero() || other.is_zero()) return BigInt(int64_t(0));
     size_t n = std::max(size_, other.size_);
-    // округляем до степени двойки
+    // FFT для очень больших чисел
+    if (n > FFT_THRESHOLD) {
+        size_t out_limbs = size_ + other.size_ + 2;
+        std::unique_ptr<uint64_t[]> out(new uint64_t[out_limbs]{});
+        fft_mul(limbs_.get(), size_, other.limbs_.get(), other.size_, out.get());
+        BigInt result(out_limbs, false);
+        for (size_t i = 0; i < out_limbs; ++i) result.limbs_[i] = out[i];
+        result.size_ = size_ + other.size_;
+        result.is_negative_ = (is_negative_ != other.is_negative_);
+        result.strip_leading_zeros();
+        return result;
+    }
     size_t n2 = 1;
     while (n2 < n) n2 <<= 1;
     if (n2 <= KARATSUBA_THRESHOLD) {
@@ -640,4 +710,4 @@ BigInt BigInt::abs() const {
     return result;
 }
 
-}
+} // namespace bignum
