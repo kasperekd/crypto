@@ -1,0 +1,41 @@
+coverage.info
+
+# Build and CMake
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+Testing/
+CTestTestfile.cmake
+*.dir/
+
+# Binaries and test outputs
+*.o
+*.a
+*.so
+*.exe
+*.out
+*.log
+*.d
+*.gcda
+*.gcno
+*.gcov
+
+# Python/venv
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Editor/OS
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode/
+.github/
+.idea/
+
+# Misc
+massif.out

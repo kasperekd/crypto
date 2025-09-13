@@ -1,0 +1,13 @@
+add_executable(bignum_bench bignum_bench.cpp)
+target_link_libraries(bignum_bench PRIVATE bignum)
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+	target_compile_options(bignum_bench PRIVATE -O3 -mavx2)
+endif()
+add_executable(bignum_tests bignum_tests.cpp)
+target_link_libraries(bignum_tests PRIVATE bignum)
+add_test(NAME BignumUnitTests COMMAND bignum_tests)
+
+if (ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+	target_compile_options(bignum_tests PRIVATE --coverage -O0)
+	target_link_options(bignum_tests PRIVATE --coverage)
+endif()
