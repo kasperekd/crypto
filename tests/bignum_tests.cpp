@@ -134,15 +134,10 @@ void test_big_numbers() {
     BigInt a(big1);
     BigInt b(big2);
     BigInt sum = a + b;
-    std::cout << "big1: " << big1 << std::endl;
-    std::cout << "big2: " << big2 << std::endl;
-    std::cout << "sum:  " << sum.to_dec_string() << std::endl;
     assert(sum.to_dec_string() == "111111111011111111101111111110111111111011111111100");
     BigInt diff = b - a;
-    std::cout << "diff: " << diff.to_dec_string() << std::endl;
     assert(diff.to_dec_string() == "86419753208641975320864197532086419753208641975320");
     BigInt prod = BigInt("10000000000000000000000000000000000000000000000000") * BigInt("2");
-    std::cout << "prod: " << prod.to_dec_string() << std::endl;
     assert(prod.to_dec_string() == "20000000000000000000000000000000000000000000000000");
 }
 
@@ -150,11 +145,7 @@ void test_negative_numbers() {
     using bignum::BigInt;
     // Конструктор и вывод
     BigInt a("-123");
-    std::cout << "a.to_dec_string(): " << a.to_dec_string() << std::endl;
-    std::cout << "a.to_hex_string(): " << a.to_hex_string() << std::endl;
     BigInt b(-456);
-    std::cout << "b.to_dec_string(): " << b.to_dec_string() << std::endl;
-    std::cout << "b.to_hex_string(): " << b.to_hex_string() << std::endl;
     // Сложение
     BigInt c = a + b; // -123 + -456 = -579
     assert(c.to_dec_string() == "-579");
@@ -176,10 +167,6 @@ void test_negative_numbers() {
     assert(BigInt(-1) < BigInt(1));
     assert(BigInt(-1) == BigInt(-1));
     assert(BigInt(-1) != BigInt(1));
-    std::cout << "a.to_dec_string(): " << a.to_dec_string() << std::endl;
-    std::cout << "a.to_hex_string(): " << a.to_hex_string() << std::endl;
-    std::cout << "b.to_dec_string(): " << b.to_dec_string() << std::endl;
-    std::cout << "b.to_hex_string(): " << b.to_hex_string() << std::endl;
 }
 
 void test_negative_mixed_arithmetic() {
@@ -228,10 +215,7 @@ void test_bitwise_and_utils() {
     BigInt x("0xF0F0F0F0F0F0F0F0");
     BigInt y("0x0FF00FF00FF00FF0");
     // &
-    std::cout << "x = " << x.to_hex_string() << ", y = " << y.to_hex_string() << std::endl;
-    std::cout << "x bitlen = " << x.bit_length() << ", y bitlen = " << y.bit_length() << std::endl;
     auto and_result = (x & y);
-    std::cout << "x & y = " << and_result.to_dec_string() << " (hex: " << and_result.to_hex_string() << ")" << std::endl;
     // python: 0xF0F0F0F0F0F0F0F0 & 0x0FF00FF00FF00FF0 = 67555025218437360 = 0xf000f000f000f0
     assert(and_result.to_dec_string() == "67555025218437360");
     assert(and_result.to_hex_string() == "0xf000f000f000f0");
@@ -239,16 +223,6 @@ void test_bitwise_and_utils() {
     BigInt pos("0x1234567890");
     assert((neg & pos).to_hex_string() == "0x10");
     assert((neg & pos).to_dec_string() == "16");
-    std::cout << "(neg | pos) = " << (neg | pos).to_hex_string() << ", dec: " << (neg | pos).to_dec_string() << std::endl;
-    std::cout << "(neg ^ pos) = " << (neg ^ pos).to_hex_string() << ", dec: " << (neg ^ pos).to_dec_string() << std::endl;
-    {
-        auto r = (neg | pos);
-        std::cout << "(neg | pos) hex: " << r.to_hex_string() << ", dec: " << r.to_dec_string() << ", bitlen: " << r.bit_length() << std::endl;
-    }
-    {
-        auto r = (neg ^ pos);
-        std::cout << "(neg ^ pos) hex: " << r.to_hex_string() << ", dec: " << r.to_dec_string() << ", bitlen: " << r.bit_length() << std::endl;
-    }
     assert((neg | pos).to_hex_string() == "-0x10");
     assert((neg ^ pos).to_hex_string() == "-0x20");
     // Проверка inplace-операторов
@@ -273,25 +247,18 @@ void test_big_negative_numbers() {
     BigInt b(big2);
     // Сложение
     BigInt sum = a + b;
-    std::cout << "big1: " << big1 << std::endl;
-    std::cout << "big2: " << big2 << std::endl;
-    std::cout << "sum:  " << sum.to_dec_string() << std::endl;
     assert(sum.to_dec_string() == "-111111111011111111101111111110111111111011111111100");
     // Вычитание
     BigInt diff = b - a;
-    std::cout << "diff: " << diff.to_dec_string() << std::endl;
     assert(diff.to_dec_string() == "-86419753208641975320864197532086419753208641975320");
     // Умножение
     BigInt prod = BigInt("-10000000000000000000000000000000000000000000000000") * BigInt("2");
-    std::cout << "prod: " << prod.to_dec_string() << std::endl;
     assert(prod.to_dec_string() == "-20000000000000000000000000000000000000000000000000");
     // Деление
     BigInt div = BigInt("-121932631112635269") / BigInt("-123456789");
-    std::cout << "div: " << div.to_dec_string() << std::endl;
     assert(div.to_dec_string() == "987654321");
     // Остаток
     BigInt mod = BigInt("-121932631112635269") % BigInt("-123456789");
-    std::cout << "mod: " << mod.to_dec_string() << std::endl;
     assert(mod.is_zero());
     // Сравнения
     assert(a < BigInt("0"));
@@ -301,9 +268,6 @@ void test_big_negative_numbers() {
     assert(BigInt("-1") == BigInt("-1"));
     assert(BigInt("-1") != BigInt("1"));
     // Проверка вывода в hex
-    std::cout << "a.to_hex_string(): " << a.to_hex_string() << std::endl;
-    std::cout << "b.to_hex_string(): " << b.to_hex_string() << std::endl;
-    std::cout << "sum.to_hex_string(): " << sum.to_hex_string() << std::endl;
 }
 
 int main() {
@@ -320,6 +284,5 @@ int main() {
     RUN_TEST(test_bitwise_and_utils);
     RUN_TEST(test_edge_cases);
     RUN_TEST(test_exceptions);
-    std::cout << "All tests passed successfully!" << std::endl;
     return 0;
 }
