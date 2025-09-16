@@ -7,6 +7,16 @@ add_executable(bignum_tests bignum_tests.cpp)
 target_link_libraries(bignum_tests PRIVATE bignum)
 add_test(NAME BignumUnitTests COMMAND bignum_tests)
 
+add_executable(crypto_lib_tests crypto_lib_tests.cpp)
+target_include_directories(crypto_lib_tests PRIVATE ${CMAKE_SOURCE_DIR}/crypto_lib/include)
+target_link_libraries(crypto_lib_tests PRIVATE crypto_lib)
+add_test(NAME CryptoLibUnitTests COMMAND crypto_lib_tests)
+
+add_executable(discrete_log_tests discrete_log_tests.cpp)
+target_include_directories(discrete_log_tests PRIVATE ${CMAKE_SOURCE_DIR}/crypto_lib/include)
+target_link_libraries(discrete_log_tests PRIVATE crypto_lib)
+add_test(NAME DiscreteLogUnitTests COMMAND discrete_log_tests)
+
 if (ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 	target_compile_options(bignum_tests PRIVATE --coverage -O0)
 	target_link_options(bignum_tests PRIVATE --coverage)
