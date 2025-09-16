@@ -20,14 +20,26 @@ int main_interactive_discrete_log() {
         std::cout << "Введите y: "; std::cin >> sy;
         std::cout << "Введите p: "; std::cin >> sp;
         a = BigInt(sa); y = BigInt(sy); p = BigInt(sp);
+        std::cout << "Введено: a=" << a.to_dec_string() << " p=" << p.to_dec_string() << " y=" << y.to_dec_string() << "\n";
     } else {
-        uint64_t p_u = 10007;
+        // BigInt p_u("1007");
+        // BigInt a_u("5");
+        // BigInt x_u("1234");
+        // BigInt y_u("1");
+        // // uint64_t p_u = 10007;
+        // // uint64_t a_u = 5;
+        // // uint64_t x_u = 1234;
+        // // uint64_t y_u = 1;
+        // for (BigInt i = 0; i < x_u; i += 1) y_u = ( y_u * a_u) % p_u;
+        // a = a_u; y = y_u; p = p_u;
+
         uint64_t a_u = 5;
-        uint64_t x_u = 1234;
-        uint64_t y_u = 1;
-        for (uint64_t i = 0; i < x_u; ++i) y_u = ( (__uint128_t)y_u * a_u) % p_u;
+        uint64_t y_u = 3;
+        uint64_t p_u = 23;
+        uint64_t x_u = 16;
+        // for (uint64_t i = 0; i < x_u; ++i) y_u = ( (__uint128_t)y_u * a_u) % p_u;
         a = BigInt((int64_t)a_u); y = BigInt((int64_t)y_u); p = BigInt((int64_t)p_u);
-        std::cout << "Сгенерированный пример: a=" << a.to_dec_string() << " p=" << p.to_dec_string() << " y=" << y.to_dec_string() << " (x известен = 1234)\n";
+        std::cout << "Сгенерированный пример: a=" << a.to_dec_string() << " p=" << p.to_dec_string() << " y=" << y.to_dec_string() << "\n";
     }
 
     auto res = discrete_log_bsgs(a, y, p, true);
