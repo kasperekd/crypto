@@ -1,4 +1,3 @@
-
 #include "bignum/bignum.hpp"
 #include <cassert>
 #include <cassert>
@@ -270,6 +269,48 @@ void test_big_negative_numbers() {
     // Проверка вывода в hex
 }
 
+void test_pow_and_log() {
+    using bignum::BigInt;
+    // pow(uint64_t)
+    assert(BigInt(2).pow(10).to_dec_string() == "1024");
+    assert(BigInt(5).pow(0).to_dec_string() == "1");
+    assert(BigInt(7).pow(1).to_dec_string() == "7");
+    assert(BigInt(10).pow(5).to_dec_string() == "100000");
+    // pow(BigInt)
+    assert(BigInt(2).pow(BigInt(10)).to_dec_string() == "1024");
+    assert(BigInt(3).pow(BigInt(4)).to_dec_string() == "81");
+    // большие степени
+    BigInt a("123456789");
+    BigInt b = a.pow(3);
+    assert(b.to_dec_string() == "1881676371789154860897069"); // python: 123456789**3
+    // log2
+    assert(BigInt(1).log2() == 0);
+    assert(BigInt(2).log2() == 1);
+    assert(BigInt(3).log2() == 1);
+    assert(BigInt(4).log2() == 2);
+    assert(BigInt("1024").log2() == 10);
+    // log10
+    assert(BigInt(1).log10() == 0);
+    assert(BigInt(9).log10() == 0);
+    assert(BigInt(10).log10() == 1);
+    assert(BigInt(99).log10() == 1);
+    assert(BigInt(100).log10() == 2);
+    assert(BigInt("1000000000000000000000000000000").log10() == 30);
+    // Проверка ошибок
+    bool caught = false;
+    try { BigInt(0).log2(); } catch (const std::domain_error&) { caught = true; }
+    assert(caught);
+    caught = false;
+    try { BigInt(-1).log2(); } catch (const std::domain_error&) { caught = true; }
+    assert(caught);
+    caught = false;
+    try { BigInt(0).log10(); } catch (const std::domain_error&) { caught = true; }
+    assert(caught);
+    caught = false;
+    try { BigInt(-1).log10(); } catch (const std::domain_error&) { caught = true; }
+    assert(caught);
+}
+
 int main() {
     RUN_TEST(test_basic_construction);
     RUN_TEST(test_addition);
@@ -284,5 +325,6 @@ int main() {
     RUN_TEST(test_bitwise_and_utils);
     RUN_TEST(test_edge_cases);
     RUN_TEST(test_exceptions);
+    RUN_TEST(test_pow_and_log);
     return 0;
 }

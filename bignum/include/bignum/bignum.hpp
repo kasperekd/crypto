@@ -62,6 +62,12 @@ public:
     size_t bit_length() const;
     BigInt abs() const;
 
+    // --- Дополнительные методы ---
+    BigInt pow(const BigInt& exp) const; // this^exp, exp >= 0
+    BigInt pow(uint64_t exp) const;      // this^exp, exp >= 0
+    size_t log2() const;                 // floor(log2(this)), только для положительных
+    size_t log10() const;                // floor(log10(this)), только для положительных
+
 private:
     std::unique_ptr<uint64_t[]> limbs_{nullptr};
     size_t size_{0};

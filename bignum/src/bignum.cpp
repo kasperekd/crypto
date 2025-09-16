@@ -16,6 +16,58 @@
 
 namespace bignum {
 
+BigInt BigInt::pow(uint64_t exp) const {
+    // TODO: optimize pow for uint64_t exponent (binary powering, windowing, etc.)
+    if (exp == 0) return BigInt(1);
+    if (is_zero()) return BigInt(0);
+    BigInt result(1);
+    for (uint64_t i = 0; i < exp; ++i) {
+        result *= *this;
+    }
+    // Корректируем знак для нечётных exp
+    if (is_negative_ && (exp & 1)) result.is_negative_ = true;
+    return result;
+}
+
+BigInt BigInt::pow(const BigInt& exp) const {
+    // TODO: optimize pow for BigInt exponent (binary powering, windowing, etc.)
+    if (exp.is_negative()) throw std::invalid_argument("Negative exponent not supported");
+    if (exp.is_zero()) return BigInt(1);
+    BigInt result(1);
+    BigInt i(0);
+    while (i < exp) {
+        result *= *this;
+        i += BigInt(1);
+    }
+    // Корректируем знак для нечётных exp
+    if (is_negative_ && (exp.limbs_[0] & 1)) result.is_negative_ = true;
+    return result;
+}
+
+size_t BigInt::log2() const {
+    if (is_zero() || is_negative_) throw std::domain_error("log2 only for positive numbers");
+    return bit_length() - 1;
+}
+
+size_t BigInt::log10() const {
+    if (is_zero() || is_negative_) throw std::domain_error("log10 only for positive numbers");
+    // log10(2) ≈ 0.30103, используем оценку через bit_length
+    size_t approx = (size_t)((bit_length() - 1) * 0.30103);
+    BigInt ten_pow(1);
+    for (size_t i = 0; i < approx; ++i) ten_pow *= 10;
+    size_t res = approx;
+    BigInt val = this->abs();
+    while (val >= ten_pow * 10) {
+        ten_pow *= 10;
+        ++res;
+    }
+    while (val < ten_pow) {
+        ten_pow /= 10;
+        --res;
+    }
+    return res;
+}
+
 uint8_t hex_char_to_val(char c) {
     if (c >= '0' && c <= '9') return c - '0';
     if (c >= 'a' && c <= 'f') return c - 'a' + 10;
@@ -280,7 +332,7 @@ namespace {
 #include <cmath>
 #include <complex>
 
-constexpr size_t FFT_THRESHOLD = 2048; // по limb-ам (64 бита)
+constexpr size_t FFT_THRESHOLD = 1000000; // временно увеличено для диагностики fft_mul
 
 // fft
 void fft(std::complex<double>* a, size_t n, bool invert) {
@@ -406,9 +458,43 @@ void karatsuba_mul(const uint64_t* a, size_t an, const uint64_t* b, size_t bn, u
     }
     // out = z0 + (z1 << (k*64)) + (z2 << (2*k*64))
     for (size_t i = 0; i < 2 * n; ++i) out[i] = 0;
-    for (size_t i = 0; i < 2 * k; ++i) out[i] += z0[i];
-    for (size_t i = 0; i < 2 * k; ++i) out[i + k] += z1[i];
-    for (size_t i = 0; i < 2 * k; ++i) out[i + 2 * k] += z2[i];
+    // Сложение с переносом для out += z0, z1, z2
+    unsigned __int128 carry = 0;
+    for (size_t i = 0; i < 2 * k; ++i) {
+        unsigned __int128 sum = (unsigned __int128)out[i] + z0[i] + carry;
+        out[i] = (uint64_t)sum;
+        carry = sum >> 64;
+    }
+    // propagate carry
+    for (size_t i = 2 * k; carry && i < 2 * n; ++i) {
+        unsigned __int128 sum = (unsigned __int128)out[i] + carry;
+        out[i] = (uint64_t)sum;
+        carry = sum >> 64;
+    }
+
+    carry = 0;
+    for (size_t i = 0; i < 2 * k; ++i) {
+        unsigned __int128 sum = (unsigned __int128)out[i + k] + z1[i] + carry;
+        out[i + k] = (uint64_t)sum;
+        carry = sum >> 64;
+    }
+    for (size_t i = 2 * k + k; carry && i < 2 * n; ++i) {
+        unsigned __int128 sum = (unsigned __int128)out[i] + carry;
+        out[i] = (uint64_t)sum;
+        carry = sum >> 64;
+    }
+
+    carry = 0;
+    for (size_t i = 0; i < 2 * k; ++i) {
+        unsigned __int128 sum = (unsigned __int128)out[i + 2 * k] + z2[i] + carry;
+        out[i + 2 * k] = (uint64_t)sum;
+        carry = sum >> 64;
+    }
+    for (size_t i = 2 * k + 2 * k; carry && i < 2 * n; ++i) {
+        unsigned __int128 sum = (unsigned __int128)out[i] + carry;
+        out[i] = (uint64_t)sum;
+        carry = sum >> 64;
+    }
 }
 
 BigInt BigInt::operator*(const BigInt& other) const {
