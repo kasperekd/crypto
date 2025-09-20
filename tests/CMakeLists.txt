@@ -17,6 +17,11 @@ target_include_directories(discrete_log_tests PRIVATE ${CMAKE_SOURCE_DIR}/crypto
 target_link_libraries(discrete_log_tests PRIVATE crypto_lib)
 add_test(NAME DiscreteLogUnitTests COMMAND discrete_log_tests)
 
+add_executable(dh_tests dh_tests.cpp)
+target_include_directories(dh_tests PRIVATE ${CMAKE_SOURCE_DIR}/crypto_lib/include)
+target_link_libraries(dh_tests PRIVATE crypto_lib)
+add_test(NAME DiffieHellmanUnitTests COMMAND dh_tests)
+
 if (ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 	target_compile_options(bignum_tests PRIVATE --coverage -O0)
 	target_link_options(bignum_tests PRIVATE --coverage)

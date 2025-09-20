@@ -1,6 +1,8 @@
 add_library(crypto_lib STATIC
     src/crypto_lib.cpp
     src/discrete_log.cpp
+    src/diffie_hellman.cpp
+    src/prime_utils.cpp
 )
 
 target_include_directories(crypto_lib PUBLIC

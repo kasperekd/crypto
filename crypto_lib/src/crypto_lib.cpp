@@ -39,8 +39,8 @@ BigInt power_mod(const BigInt& a, const BigInt& x, const BigInt& p) {
     BigInt exp = x;
     BigInt two(2);
     while (!exp.is_zero()) {
-        if ((exp % two) == BigInt(1)) res = multiply_mod(res, base, p);
-        base = multiply_mod(base, base, p);
+        if ((exp % two) == BigInt(1)) res = (res * base) % p;
+        base = (base * base) % p;
         exp = exp >> 1;
     }
     return res;

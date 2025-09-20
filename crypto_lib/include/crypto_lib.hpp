@@ -15,4 +15,8 @@ BigInt extended_euclidean(const BigInt& a, const BigInt& b, BigInt& x, BigInt& y
 
 BigInt generate_random_prime(const BigInt& min, const BigInt& max);
 
+// Generate a random prime of approximately `bits` bits using Miller-Rabin.
+// This is probabilistic; `mr_iterations` controls MR rounds (default 20).
+BigInt generate_random_prime_bits(size_t bits, int mr_iterations = 20);
+
 #endif // CRYPTO_LIB_HPP
