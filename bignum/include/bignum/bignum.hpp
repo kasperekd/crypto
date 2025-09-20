@@ -34,6 +34,11 @@ public:
     BigInt operator%(const BigInt& other) const;
     BigInt& operator%=(const BigInt& other);
 
+    BigInt& operator++();
+    BigInt operator++(int);
+    BigInt& operator--();
+    BigInt operator--(int);
+
     // --- Побитовые операторы (работают с модулем числа, знак сохраняется) ---
     BigInt operator<<(size_t bits) const;
     BigInt& operator<<=(size_t bits);

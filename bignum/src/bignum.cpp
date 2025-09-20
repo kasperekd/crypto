@@ -296,6 +296,31 @@ std::pair<BigInt, BigInt> BigInt::div_mod_magnitude(const BigInt& dividend, cons
     return {quotient, remainder};
 }
 
+BigInt BigInt::operator++(int) {
+    BigInt temp = *this;
+    BigInt one(1);
+    *this += one;
+    return temp;
+}
+
+BigInt BigInt::operator--(int) {
+    BigInt temp = *this;
+    BigInt one(1);
+    *this -= one;
+    return temp;
+}
+
+BigInt& BigInt::operator++() {
+    BigInt one(1);
+    *this += one;
+    return *this;
+}
+
+BigInt& BigInt::operator--() {
+    BigInt one(1);
+    *this -= one;
+    return *this;
+}   
 
 BigInt BigInt::operator-() const {
     if (is_zero()) return *this;
