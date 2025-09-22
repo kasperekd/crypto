@@ -1,0 +1,15 @@
+# add_executable(bignum_bench bignum_bench.cpp)
+# target_link_libraries(bignum_bench PRIVATE bignum)
+# if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+# 	target_compile_options(bignum_bench PRIVATE -O3 -mavx2)
+# endif()
+
+add_executable(shamir_test shamir_test.cpp)
+target_include_directories(shamir_test PRIVATE ${CMAKE_SOURCE_DIR}/crypto_lib_boost/include)
+target_link_libraries(shamir_test PRIVATE crypto_lib_boost)
+add_test(NAME shamir_test COMMAND shamir_test)
+
+# if (ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+# 	target_compile_options(bignum_tests PRIVATE --coverage -O0)
+# 	target_link_options(bignum_tests PRIVATE --coverage)
+# endif()
