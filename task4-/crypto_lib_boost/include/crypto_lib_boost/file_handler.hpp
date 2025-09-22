@@ -18,6 +18,12 @@ std::string read_text_file(const std::string& file_path);
 // Записывает строку в текстовый файл
 void write_text_file(const std::string& file_path, const std::string& data);
 
+std::vector<unsigned char> to_base64(const std::vector<unsigned char>& data);
+std::vector<unsigned char> from_base64(const std::string& base64_str);
+
+std::vector<unsigned char> str_to_bytes(const std::string& str);
+std::string bytes_to_str(const std::vector<unsigned char>& bytes);
+
 } // namespace file_handler
 
 #endif // FILE_HANDLER_HPP
