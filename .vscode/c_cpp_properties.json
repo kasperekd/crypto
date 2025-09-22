@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/bignum/include",
+                "${workspaceFolder}/bignum/include/bignum",
+                "${workspaceFolder}/crypto_lib/include"
+            ],
+            "defines": [],
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}
