@@ -9,6 +9,11 @@ target_include_directories(shamir_test PRIVATE ${CMAKE_SOURCE_DIR}/crypto_lib_bo
 target_link_libraries(shamir_test PRIVATE crypto_lib_boost)
 add_test(NAME shamir_test COMMAND shamir_test)
 
+add_executable(elgamal_test elgamal_test.cpp)
+target_include_directories(elgamal_test PRIVATE ${CMAKE_SOURCE_DIR}/crypto_lib_boost/include)
+target_link_libraries(elgamal_test PRIVATE crypto_lib_boost)
+add_test(NAME elgamal_test COMMAND elgamal_test)
+
 # if (ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 # 	target_compile_options(bignum_tests PRIVATE --coverage -O0)
 # 	target_link_options(bignum_tests PRIVATE --coverage)

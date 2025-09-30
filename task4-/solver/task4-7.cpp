@@ -6,7 +6,7 @@
 
 #include "crypto_lib_boost/file_handler.hpp"
 #include "crypto_lib_boost/shamir_cipher.hpp"
-// #include "crypto_lib_boost/elgamal_cipher.hpp" 
+#include "crypto_lib_boost/elgamal_cipher.hpp" 
 // #include "crypto_lib_boost/rsa_cipher.hpp"  
 // #include "crypto_lib_boost/vernam_cipher.hpp" 
 
@@ -119,6 +119,82 @@ void shamir_menu() {
     }
 }
 
+// --- ElGamal handlers ---
+void handle_elgamal_keygen() {
+    std::string basename;
+    std::cout << "\nВведите имя для файлов ключей (например, 'my_elgamal_key'): ";
+    std::cin >> basename;
+    std::cout << "\nВведите размер ключа в битах: ";
+    int key_size; std::cin >> key_size;
+    std::cout << "Генерация " << key_size << "-битных ключей..." << std::endl;
+    auto keys = elgamal_cipher::generate_keys(key_size);
+    elgamal_cipher::save_keys_to_files(keys, basename);
+    std::cout << "Ключи успешно сгенерированы!\n";
+    std::cout << "-> Приватный ключ сохранен в: " << basename << ".key\n";
+    std::cout << "-> Публичный ключ сохранен в: " << basename << ".pub\n";
+}
+
+void handle_elgamal_encrypt() {
+    std::string input_file, output_file, key_file;
+    std::cout << "\nПуть к файлу для шифрования: ";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::getline(std::cin, input_file);
+    std::cout << "Путь для сохранения зашифрованного файла: "; std::getline(std::cin, output_file);
+    std::cout << "Путь к файлу публичного ключа (.pub): "; std::getline(std::cin, key_file);
+    auto keys = elgamal_cipher::load_public_keys(key_file);
+    auto data = file_handler::read_binary_file(input_file);
+    std::string enc = elgamal_cipher::encrypt(data, keys.p, keys.g, keys.c_b);
+    std::string final_base64_output = file_handler::bytes_to_str(file_handler::to_base64(file_handler::str_to_bytes(enc)));
+    file_handler::write_text_file(output_file, final_base64_output);
+    std::cout << "Файл успешно зашифрован: " << output_file << std::endl;
+}
+
+void handle_elgamal_decrypt() {
+    std::string input_file, output_file, key_file;
+    std::cout << "\nПуть к зашифрованному файлу: ";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::getline(std::cin, input_file);
+    std::cout << "Путь для сохранения расшифрованного файла: "; std::getline(std::cin, output_file);
+    std::cout << "Путь к файлу приватного ключа (.key): "; std::getline(std::cin, key_file);
+    auto keys = elgamal_cipher::load_private_keys(key_file);
+    std::string base64_data_from_file = file_handler::read_text_file(input_file);
+    std::vector<unsigned char> raw_encrypted_bytes = file_handler::from_base64(base64_data_from_file);
+    std::string encrypted_str = file_handler::bytes_to_str(raw_encrypted_bytes);
+    auto decrypted_data = elgamal_cipher::decrypt(encrypted_str, keys.p, keys.d_b);
+    file_handler::write_binary_file(output_file, decrypted_data);
+    std::cout << "Файл успешно расшифрован: " << output_file << std::endl;
+}
+
+void elgamal_menu() {
+    int choice;
+    while (true) {
+        std::cout << "\n--- Меню Шифра Эль-Гамаля ---\n";
+        std::cout << "1. Сгенерировать пару ключей\n";
+        std::cout << "2. Зашифровать файл\n";
+        std::cout << "3. Расшифровать файл\n";
+        std::cout << "0. Назад в главное меню\n";
+        std::cout << "> ";
+        std::cin >> choice;
+        if(std::cin.fail()) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Неверный ввод. Пожалуйста, введите число.\n";
+            continue;
+        }
+        try {
+            switch (choice) {
+                case 1: handle_elgamal_keygen(); break;
+                case 2: handle_elgamal_encrypt(); break;
+                case 3: handle_elgamal_decrypt(); break;
+                case 0: return;
+                default: std::cout << "Неверный выбор\n"; break;
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "\n!!! ОШИБКА: " << e.what() << " !!!\n";
+        }
+    }
+}
+
 // --- Главное меню ---
 int main() {
     int choice;
@@ -126,7 +202,7 @@ int main() {
     while (true) {
         std::cout << "\n===== Главное Меню =====\n";
         std::cout << "4. Шифр Шамира\n";
-        std::cout << "5. Шифр Эль-Гамаля (не реализовано)\n";
+        std::cout << "5. Шифр Эль-Гамаля\n";
         std::cout << "6. Шифр RSA (не реализовано)\n";
         std::cout << "7. Шифр Вернама (не реализовано)\n";
         std::cout << "0. Выход\n";
@@ -143,7 +219,7 @@ int main() {
         if (choice == 0) break;
         switch (choice) {
             case 4: shamir_menu(); break;
-            case 5: std::cout << "Реализация шифра Эль-Гамаля еще не добавлена.\n"; break;
+                case 5: elgamal_menu(); break;
             case 6: std::cout << "Реализация шифра RSA еще не добавлена.\n"; break;
             case 7: std::cout << "Реализация шифра Вернама еще не добавлена.\n"; break;
             default: std::cout << "Неверный выбор или функция не реализована.\n"; break;
