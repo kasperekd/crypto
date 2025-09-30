@@ -24,6 +24,16 @@ target_include_directories(shamir_negative_test PRIVATE ${CMAKE_SOURCE_DIR}/cryp
 target_link_libraries(shamir_negative_test PRIVATE crypto_lib_boost)
 add_test(NAME shamir_negative_test COMMAND shamir_negative_test)
 
+add_executable(vernam_test vernam_test.cpp)
+target_include_directories(vernam_test PRIVATE ${CMAKE_SOURCE_DIR}/crypto_lib_boost/include)
+target_link_libraries(vernam_test PRIVATE crypto_lib_boost)
+add_test(NAME vernam_test COMMAND vernam_test)
+
+add_executable(vernam_alice_bob_test vernam_alice_bob_test.cpp)
+target_include_directories(vernam_alice_bob_test PRIVATE ${CMAKE_SOURCE_DIR}/crypto_lib_boost/include)
+target_link_libraries(vernam_alice_bob_test PRIVATE crypto_lib_boost)
+add_test(NAME vernam_alice_bob_test COMMAND vernam_alice_bob_test)
+
 # if (ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 # 	target_compile_options(bignum_tests PRIVATE --coverage -O0)
 # 	target_link_options(bignum_tests PRIVATE --coverage)
