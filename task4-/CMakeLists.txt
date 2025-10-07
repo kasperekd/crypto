@@ -4,6 +4,8 @@ project(CryptoTasks4-7 CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+enable_testing()
+
 find_package(Boost REQUIRED)
 if(Boost_FOUND)
     message(STATUS "Boost found. Version: ${Boost_VERSION_STRING}")
